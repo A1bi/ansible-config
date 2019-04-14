@@ -1,0 +1,19 @@
+server {
+  listen [::]:80;
+
+  ## certbot
+
+  location /.well-known {
+    alias /usr/local/www/.well-known;
+  }
+
+  location / {
+    {% if nginx_tls %}
+      ## redirect http to https
+
+      return 301 https://$host$request_uri;
+    {% else %}
+      deny all;
+    {% endif %}
+  }
+}

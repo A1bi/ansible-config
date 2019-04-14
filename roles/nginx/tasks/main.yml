@@ -1,0 +1,60 @@
+- name: Set tls variable
+  set_fact:
+    nginx_tls: '{{ servers | selectattr("tls") | list | length > 0 }}'
+
+- name: Install nginx
+  pkgng:
+    name: nginx-devel
+    state: present
+
+- name: Copy basic nginx config
+  copy:
+    src: nginx.conf
+    dest: /usr/local/etc/nginx/nginx.conf
+  notify:
+    - Start nginx
+
+- name: Create config for default server
+  template:
+    src: default_server.j2
+    dest: /usr/local/etc/nginx/sites-enabled/default
+  notify:
+    - Reload nginx
+
+- name: Generate Diffie-Hellman parameters (2048 bits)
+  openssl_dhparam:
+    path: /etc/ssl/dhparams.pem
+    size: 2048
+
+- name: Create root directory for servers
+  file:
+    name: /usr/local/www/{{ item.name }}
+    state: directory
+  with_items: '{{ servers }}'
+
+- name: Force start/reload nginx
+  meta: flush_handlers
+
+- import_tasks: tls.yml
+  when: nginx_tls
+
+- name: Create config for servers
+  template:
+    src: server.j2
+    dest: /usr/local/etc/nginx/sites-enabled/{{ item.name }}
+  with_items: '{{ servers }}'
+  notify:
+    - Reload nginx
+
+- name: Create snippets directory
+  file:
+    name: /usr/local/etc/nginx/snippets
+    state: directory
+
+- name: Create listen config for servers
+  template:
+    src: server_listen.j2
+    dest: /usr/local/etc/nginx/snippets/{{ item.name }}_listen
+  with_items: '{{ servers }}'
+  notify:
+    - Reload nginx

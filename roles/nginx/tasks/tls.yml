@@ -1,0 +1,36 @@
+- name: Install certbot
+  pkgng:
+    name: py36-certbot
+    state: present
+
+- name: Create letsencrypt certificate
+  command: certbot-3.6 certonly -n --agree-tos -m albrecht@oster.online --expand --webroot -w /usr/local/www -d {{ item.name }} {% if item.www_subdomain %}-d www.{{ item.name }}{% endif %}
+  # args:
+  #   creates: /usr/local/etc/letsencrypt/renewal/{{ item.name }}.conf
+  with_items: '{{ servers }}'
+
+- name: Create cron.d directory
+  file:
+    name: /usr/local/etc/cron.d
+    state: directory
+
+- name: Check if cronfile exists
+  stat:
+    path: /usr/local/etc/cron.d/certbot
+  register: cron_stat_result
+
+- name: Create cron entry for letsencrypt renewal
+  cron:
+    job: /usr/local/bin/certbot-3.6 renew
+    minute: '{{ 59 | random }}'
+    hour: '{{ 23 | random }}'
+    weekday:  '{{ 6 | random }}'
+    cron_file: /usr/local/etc/cron.d/certbot
+    user: root
+  when: cron_stat_result.stat.exists == false
+
+- name: Copy letsencrypt renew hook
+  copy:
+    src: certbot_renew_hook
+    dest: /usr/local/etc/letsencrypt/renewal-hooks/post/nginx_reload
+    mode: u+x

@@ -1,0 +1,9 @@
+{% if item.tls %}
+  listen [::]:443 ssl http2;
+  listen [::]:8443 ssl proxy_protocol http2;
+
+  ssl_certificate /usr/local/etc/letsencrypt/live/{{ item.name }}/fullchain.pem;
+  ssl_certificate_key /usr/local/etc/letsencrypt/live/{{ item.name }}/privkey.pem;
+{% else %}
+  listen [::]:80;
+{% endif %}

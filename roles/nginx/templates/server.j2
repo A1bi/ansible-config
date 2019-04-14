@@ -1,0 +1,19 @@
+server {
+  include snippets/{{ item.name }}_listen;
+
+  server_name {% if item.www_subdomain %}www.{% endif %}{{ item.name }};
+
+  root /usr/local/www/{{ item.name }};
+}
+
+{% if item.www_subdomain %}
+  ## redirect missing www.
+
+  server {
+    include snippets/{{ item.name }}_listen;
+
+    server_name {{ item.name }};
+
+    return 301 $scheme://www.$host$request_uri;
+  }
+{% endif %}
