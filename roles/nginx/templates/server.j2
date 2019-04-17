@@ -1,18 +1,28 @@
 server {
   include snippets/{{ item.name }}_listen;
 
-  server_name {% if item.www_subdomain %}www.{% endif %}{{ item.name }};
+  server_name
+    {% if item.www_subdomain|default(false) %}www.{% endif %}{{ item.name }}
+    {% for alt in item.alternatives|default([]) %}
+      {% if alt.www_subdomain|default(false) %}www.{% endif %}{{ alt.name }}
+    {% endfor %}
+  ;
 
   root /usr/local/www/{{ item.name }};
 }
 
-{% if item.www_subdomain %}
+{% if item.www_subdomain|default(false) or (item.alternatives|default([])|selectattr('www_subdomain', 'defined')|selectattr('www_subdomain')|list|length) > 0 %}
   ## redirect missing www.
 
   server {
     include snippets/{{ item.name }}_listen;
 
-    server_name {{ item.name }};
+    server_name
+      {% if item.www_subdomain|default(false) %}{{ item.name }}{% endif %}
+      {% for alt in item.alternatives|default([])|selectattr('www_subdomain', 'defined')|selectattr('www_subdomain') %}
+        {{ alt.name }}
+      {% endfor %}
+    ;
 
     return 301 $scheme://www.$host$request_uri;
   }

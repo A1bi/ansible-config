@@ -1,6 +1,6 @@
 - name: Set tls variable
   set_fact:
-    nginx_tls: '{{ servers | selectattr("tls") | list | length > 0 }}'
+    nginx_tls: '{{ servers|selectattr("tls")|list|length > 0 }}'
 
 - name: Install nginx
   pkgng:
