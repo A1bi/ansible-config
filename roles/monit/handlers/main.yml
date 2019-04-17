@@ -1,11 +1,11 @@
-- name: Start nginx
+- name: Start monit
   service:
-    name: nginx
+    name: monit
     state: started
     enabled: yes
 
-- name: Reload nginx
+- name: Reload monit
   service:
-    name: nginx
+    name: monit
     state: reloaded
     enabled: yes

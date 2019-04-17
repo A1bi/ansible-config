@@ -1,0 +1,21 @@
+- name: Install monit
+  pkgng:
+    name: monit
+    state: present
+  notify:
+    - Start monit
+
+- name: Copy monit config
+  template:
+    src: monitrc.j2
+    dest: /usr/local/etc/monitrc
+    mode: 0600
+  notify:
+    - Reload monit
+
+- name: Create monit.d directory
+  file:
+    name: /usr/local/etc/monit.d
+    state: directory
+  notify:
+    - Reload monit

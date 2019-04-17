@@ -1,18 +1,25 @@
 - name: Set tls variable
   set_fact:
-    nginx_tls: '{{ servers|selectattr("tls")|list|length > 0 }}'
+    nginx_tls: '{{ servers|selectattr("tls","defined")|selectattr("tls")|list|length > 0 }}'
 
 - name: Install nginx
   pkgng:
     name: nginx-devel
     state: present
+  notify:
+    - Start nginx
 
 - name: Copy basic nginx config
   copy:
     src: nginx.conf
     dest: /usr/local/etc/nginx/nginx.conf
   notify:
-    - Start nginx
+    - Reload nginx
+
+- name: Create sites-enabled directory
+  file:
+    name: /usr/local/etc/nginx/sites-enabled
+    state: directory
 
 - name: Create config for default server
   template:
@@ -41,7 +48,7 @@
 - name: Create config for servers
   template:
     src: server.j2
-    dest: /usr/local/etc/nginx/sites-enabled/{{ item.name }}
+    dest: /usr/local/etc/nginx/sites-enabled/{{ item.service_name|default(item.name) }}
   with_items: '{{ servers }}'
   notify:
     - Reload nginx
@@ -54,7 +61,7 @@
 - name: Create listen config for servers
   template:
     src: server_listen.j2
-    dest: /usr/local/etc/nginx/snippets/{{ item.name }}_listen
+    dest: /usr/local/etc/nginx/snippets/{{ item.service_name|default(item.name) }}_listen
   with_items: '{{ servers }}'
   notify:
     - Reload nginx

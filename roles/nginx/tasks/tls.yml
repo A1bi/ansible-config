@@ -4,10 +4,12 @@
     state: present
 
 - name: Create letsencrypt certificate
-  command: certbot-3.6 certonly -n --agree-tos -m albrecht@oster.online --expand --webroot -w /usr/local/www -d {{ item.name }} {% if item.www_subdomain %}-d www.{{ item.name }}{% endif %}
+  command: certbot-3.6 certonly -n --agree-tos -m albrecht@oster.online --expand --webroot -w /usr/local/www -d {{ item.name }} {% if item.www_subdomain|default(false) %}-d www.{{ item.name }}{% endif %}
   # args:
   #   creates: /usr/local/etc/letsencrypt/renewal/{{ item.name }}.conf
   with_items: '{{ servers }}'
+  notify:
+    - Reload nginx
 
 - name: Create cron.d directory
   file:

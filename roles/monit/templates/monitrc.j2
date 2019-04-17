@@ -1,0 +1,28 @@
+set daemon  30         # check services at 30 seconds intervals
+
+set log /var/log/monit.log
+
+set ssl {
+  verify     : enable, # verify SSL certificatesNDED)
+  selfsigned : reject  # allow self signed SSL certificates
+}
+
+set eventqueue
+  basedir /var/monit  # set the base directory where events will be stored
+  slots 1000           # optionally limit the queue size
+
+set mmonit https://{{ monit_mmonit_user }}:{{ monit_mmonit_passwd }}@mmonit.a0s.de/collector
+
+set httpd unixsocket /var/run/monit.sock uid www gid www
+  allow {{ monit_httpd_user }}:{{ monit_httpd_passwd }}
+
+set onreboot nostart
+
+check system $HOST
+  if loadavg (1min) > 4 then alert
+  if loadavg (5min) > 2 then alert
+  if cpu usage > 95% for 10 cycles then alert
+  if memory usage > 75% then alert
+  if swap usage > 75% then alert
+
+include /usr/local/etc/monit.d/*

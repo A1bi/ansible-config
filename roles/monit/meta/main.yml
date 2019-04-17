@@ -1,0 +1,13 @@
+dependencies:
+  - role: nginx
+    vars:
+      servers:
+        - name: '{{ inventory_hostname }}'
+          service_name: monit
+          port: 2812
+          tls: true
+          proxy_protocol: false
+          locations:
+            - path: /
+              proxy:
+                pass: http://unix:/var/run/monit.sock

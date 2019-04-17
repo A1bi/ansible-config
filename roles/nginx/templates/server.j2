@@ -1,5 +1,5 @@
 server {
-  include snippets/{{ item.name }}_listen;
+  include snippets/{{ item.service_name|default(item.name) }}_listen;
 
   server_name
     {% if item.www_subdomain|default(false) %}www.{% endif %}{{ item.name }}
@@ -8,6 +8,18 @@ server {
     {% endfor %}
   ;
 
+  {% for location in item.locations|default([]) %}
+    location {{ location.path }} {
+      {% if location.proxy|default(false) %}
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        proxy_pass {{ location.proxy.pass }};
+      {% endif %}
+    }
+  {% endfor %}
+
   root /usr/local/www/{{ item.name }};
 }
 
@@ -15,7 +27,7 @@ server {
   ## redirect missing www.
 
   server {
-    include snippets/{{ item.name }}_listen;
+    include snippets/{{ item.service_name|default(item.name) }}_listen;
 
     server_name
       {% if item.www_subdomain|default(false) %}{{ item.name }}{% endif %}
