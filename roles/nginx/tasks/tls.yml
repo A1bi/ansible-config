@@ -5,9 +5,9 @@
 
 - name: Create letsencrypt certificate
   command: certbot-3.6 certonly -n --agree-tos -m albrecht@oster.online --expand --webroot -w /usr/local/www -d {{ item.name }} {% if item.www_subdomain|default(false) %}-d www.{{ item.name }}{% endif %}
-  # args:
-  #   creates: /usr/local/etc/letsencrypt/renewal/{{ item.name }}.conf
   with_items: '{{ servers }}'
+  register: certbot_result
+  changed_when: '"Congratulations!" in certbot_result.stdout'
   notify:
     - Reload nginx
 
