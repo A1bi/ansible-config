@@ -1,14 +1,8 @@
-- name: Create pf.conf
-  file:
-    name: /etc/pf.conf
-    state: touch
-    mode: 0600
-
 - name: Add pf setup
   blockinfile:
-    dest: /etc/pf.conf
+    path: /etc/pf.conf
     marker: '# setup {mark}'
-    state: present
+    create: true
     insertbefore: BOF
     block: |
       int_if = {{ ansible_interfaces[0] }}
@@ -41,7 +35,7 @@
 
 - name: Create ruleset
   blockinfile:
-    dest: /etc/pf.conf
+    path: /etc/pf.conf
     marker: '# {{ ansible_hostname }}: {{ set_name }}'
     block: '{{ lookup("template", "ruleset.j2") }}'
     state: present

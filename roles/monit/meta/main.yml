@@ -1,5 +1,6 @@
 dependencies:
   - role: nginx
+    when: 'jailed != true'
     vars:
       servers:
         - name: '{{ inventory_hostname }}'

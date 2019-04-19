@@ -19,3 +19,10 @@
     state: directory
   notify:
     - Reload monit
+
+- name: Add monitered services
+  template:
+    src: service.j2
+    dest: '/usr/local/etc/monit.d/{{ ansible_hostname }}_{{ set_name }}'
+  notify:
+    - Reload monit

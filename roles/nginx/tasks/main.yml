@@ -77,3 +77,15 @@
       - proto: tcp
         to:
           ports: '{{ ((servers|selectattr("port","defined")|map(attribute="port")|list) + ["http", "https"])|unique|join(", ") }}'
+
+- name: Add monit service
+  include_role:
+    name: monit
+    apply:
+      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
+  vars:
+    set_name: nginx
+    services:
+      - type: process
+        name: nginx
+        pidfile: /var/run/nginx.pid

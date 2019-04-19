@@ -2,6 +2,12 @@
   roles:
     - name: monit
 
+- hosts: jails
+  tasks:
+    - name: Set jail name
+      set_fact:
+        jail_name: '{{ ansible_hostname|replace("-", "_") }}'
+
 - hosts: ansible-sandbox.dyn.a0s.de
   roles:
     - name: nginx
