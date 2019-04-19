@@ -1,8 +1,34 @@
 {% for service in services %}
+
   {% if service.type == 'process' %}
     check process {{ ansible_hostname }}_{{ service.name }} with pidfile {% if jailed %}/usr/jails/{{ ansible_hostname }}{% endif %}{{ service.pidfile }}
     {% for action in ['start', 'stop'] %}
       {{ action }} program = "/usr/sbin/service {% if jailed %}-j {{ jail_name }}{% endif %} {{ service.name }} {{ action }}"
     {% endfor %}
+
+  {% elif service.type == 'remote_http' %}
+    {% for server in servers %}
+      check host {{ server.name }} with address {{ server.name }}
+        {% for proto in (['ipv6'] + ([] if service.skip_ipv4|default(false) else ['ipv4'])) %}
+          if failed port 80 protocol http status = {% if server.tls|default(false) or server.www_subdomain|default(false) %}301{% else %}200{% endif %} {{ proto }} then alert every 10 cycles
+          {% if server.tls|default(false) %}
+            if failed port 443 protocol https status = {% if server.www_subdomain|default(false) %}301{% else %}200{% endif %} {{ proto }} then alert every 10 cycles
+          {% endif %}
+          {% if server.www_subdomain|default(false) %}
+            if failed host www.{{ server.name }} port 443 protocol https status = 200 {{ proto }} then alert every 10 cycles
+          {% endif %}
+
+          {% for alt in server.alternatives|default([]) %}
+            if failed host {{ alt.name }} port 80 protocol http status = {% if server.tls|default(false) or alt.www_subdomain|default(false) %}301{% else %}200{% endif %} {{ proto }} then alert every 10 cycles
+            {% if server.tls|default(false) %}
+              if failed host {{ alt.name }} port 443 protocol https status = {% if alt.www_subdomain|default(false) %}301{% else %}200{% endif %} {{ proto }} then alert every 10 cycles
+            {% endif %}
+            {% if alt.www_subdomain|default(false) %}
+              if failed host www.{{ alt.name }} port 443 protocol https status = 200 {{ proto }} then alert every 10 cycles
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+    {% endfor %}
   {% endif %}
+
 {% endfor %}

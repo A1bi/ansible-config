@@ -89,3 +89,16 @@
       - type: process
         name: nginx
         pidfile: /var/run/nginx.pid
+
+- name: Add remote monit service
+  include_role:
+    name: monit
+    apply:
+      delegate_to: '{{ remote_monit_host }}'
+  vars:
+    set_name: '{{ ansible_hostname }}_remote_http'
+    services:
+      - type: remote_http
+        servers: '{{ servers }}'
+        skip_ipv4: '{{ remote_monit_skip_ipv4|default(false) }}'
+  when: 'remote_monit|default(false)'

@@ -15,3 +15,5 @@
         - name: testy.ansible-sandbox.dyn.a0s.de
           tls: true
           www_subdomain: true
+      remote_monit: true
+      remote_monit_skip_ipv4: true
