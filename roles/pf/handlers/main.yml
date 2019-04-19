@@ -1,0 +1,14 @@
+- name: Start pf
+  service:
+    name: pf
+    state: started
+    enabled: yes
+
+- name: Reload pf
+  command: pfctl -f /etc/pf.conf
+
+- name: Enable pf
+  service:
+    name: pf
+    enabled: yes
+  listen: Reload pf

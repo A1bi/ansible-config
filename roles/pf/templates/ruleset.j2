@@ -1,0 +1,3 @@
+{% for rule in rules %}
+  {{- rule.action|default('pass') }} {{ rule.direction|default('in') }} proto {{ rule.proto }} to {{ rule.to.address|default(inventory_hostname) }} port { {{ rule.to.ports }} }
+{% endfor %}

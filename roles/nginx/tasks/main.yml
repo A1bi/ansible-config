@@ -65,3 +65,15 @@
   with_items: '{{ servers }}'
   notify:
     - Reload nginx
+
+- name: Create firewall rules
+  include_role:
+    name: pf
+    apply:
+      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
+  vars:
+    set_name: nginx
+    rules:
+      - proto: tcp
+        to:
+          ports: '{{ ((servers|selectattr("port","defined")|map(attribute="port")|list) + ["http", "https"])|unique|join(", ") }}'

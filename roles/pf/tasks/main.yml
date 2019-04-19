@@ -1,0 +1,49 @@
+- name: Create pf.conf
+  file:
+    name: /etc/pf.conf
+    state: touch
+    mode: 0600
+
+- name: Add pf setup
+  blockinfile:
+    dest: /etc/pf.conf
+    marker: '# setup {mark}'
+    state: present
+    insertbefore: BOF
+    block: |
+      int_if = {{ ansible_interfaces[0] }}
+      localnet = $int_if:network
+      set skip on lo0
+  notify:
+    - Start pf
+
+- name: Add general block and ssh rule
+  blockinfile:
+    dest: /etc/pf.conf
+    marker: '# general block and ssh {mark}'
+    state: present
+    block: |
+      block in all
+      pass out all
+      pass in proto { icmp6, icmp } all
+
+      pass in inet6 proto tcp to port ssh
+  notify:
+    - Start pf
+
+- name: Add host to /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '{{ inventory_hostname }}'
+    line: "{{ ansible_all_ipv6_addresses[0] }}\t{{ inventory_hostname }}"
+  notify:
+    - Reload pf
+
+- name: Create ruleset
+  blockinfile:
+    dest: /etc/pf.conf
+    marker: '# {{ ansible_hostname }}: {{ set_name }}'
+    block: '{{ lookup("template", "ruleset.j2") }}'
+    state: present
+  notify:
+    - Reload pf
