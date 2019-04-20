@@ -26,3 +26,4 @@
     dest: '/usr/local/etc/monit.d/{{ ansible_hostname }}_{{ set_name }}'
   notify:
     - Reload monit
+  when: services is defined

@@ -32,11 +32,12 @@
     line: "{{ ansible_all_ipv6_addresses[0] }}\t{{ inventory_hostname }}"
   notify:
     - Reload pf
+  when: jailed|default(false) == true
 
 - name: Create ruleset
   blockinfile:
     path: /etc/pf.conf
-    marker: '# {{ ansible_hostname }}: {{ set_name }}'
+    marker: '# {{ ansible_hostname }}: {{ set_name }} {mark}'
     block: '{{ lookup("template", "ruleset.j2") }}'
     state: present
   notify:

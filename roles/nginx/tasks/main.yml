@@ -72,7 +72,7 @@
     apply:
       delegate_to: '{{ jail_host|d(inventory_hostname) }}'
   vars:
-    set_name: nginx
+    set_name: '{{ pf_set_name|default("nginx") }}'
     rules:
       - proto: tcp
         to:
@@ -84,6 +84,7 @@
     apply:
       delegate_to: '{{ jail_host|d(inventory_hostname) }}'
   vars:
+    service_only: true
     set_name: nginx
     services:
       - type: process
@@ -96,6 +97,7 @@
     apply:
       delegate_to: '{{ remote_monit_host }}'
   vars:
+    service_only: true
     set_name: '{{ ansible_hostname }}_remote_http'
     services:
       - type: remote_http
