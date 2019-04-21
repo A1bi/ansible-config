@@ -6,7 +6,17 @@
   tasks:
     - name: Set jail name
       set_fact:
+        jailed: true
         jail_name: '{{ ansible_hostname|replace("-", "_") }}'
+
+- hosts: blacky.dyn.a0s.de
+  roles:
+    - name: nginx
+      proxy_ipv4:
+        - host: ansible-sandbox.dyn.a0s.de
+          names:
+            - testy.ansible-sandbox.dyn.a0s.de
+            - www.testy.ansible-sandbox.dyn.a0s.de
 
 - hosts: ansible-sandbox.dyn.a0s.de
   roles:

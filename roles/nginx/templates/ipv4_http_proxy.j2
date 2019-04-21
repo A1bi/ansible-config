@@ -1,0 +1,10 @@
+{% for proxy in proxy_ipv4 %}
+  server {
+    listen 80;
+    server_name {% for name in proxy.names %} {{ name }}{% endfor %};
+    location / {
+      include snippets/proxy_real_ip;
+      proxy_pass http://{{ proxy.host }}:80;
+    }
+  }
+{% endfor %}

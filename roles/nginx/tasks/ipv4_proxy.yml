@@ -1,0 +1,35 @@
+- name: Copy proxy real ip snippet
+  copy:
+    src: proxy_real_ip
+    dest: /usr/local/etc/nginx/snippets/proxy_real_ip
+  notify:
+    - Reload nginx
+
+- name: Create http proxy config
+  template:
+    src: ipv4_http_proxy.j2
+    dest: /usr/local/etc/nginx/sites-enabled/ipv4_http_proxy
+  notify:
+    - Reload nginx
+
+- name: Create https proxy config
+  template:
+    src: ipv4_https_proxy.j2
+    dest: /usr/local/etc/nginx/ipv4_https_proxy.conf
+  notify:
+    - Reload nginx
+
+- name: Add load module line for https proxy
+  lineinfile:
+    path: /usr/local/etc/nginx/nginx.conf
+    line: load_module /usr/local/libexec/nginx/ngx_stream_module.so;
+    insertbefore: BOF
+  notify:
+    - Reload nginx
+
+- name: Add import config line for https proxy
+  lineinfile:
+    path: /usr/local/etc/nginx/nginx.conf
+    line: include /usr/local/etc/nginx/ipv4_https_proxy.conf;
+  notify:
+    - Reload nginx

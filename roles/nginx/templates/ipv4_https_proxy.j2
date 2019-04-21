@@ -1,0 +1,22 @@
+stream {
+  {% for proxy in proxy_ipv4 %}
+    upstream {{ hostvars[proxy.host].inventory_hostname_short }} {
+      server {{ proxy.host }}:8443 fail_timeout=1s;
+    }
+  {% endfor %}
+
+  map $ssl_preread_server_name $name {
+    {% for proxy in proxy_ipv4 %}
+      {% for name in proxy.names %}
+        {{ name }} {{ hostvars[proxy.host].inventory_hostname_short }};
+      {% endfor %}
+    {% endfor %}
+  }
+
+  server {
+    listen 443;
+    proxy_pass $name;
+    proxy_protocol on;
+    ssl_preread on;
+  }
+}

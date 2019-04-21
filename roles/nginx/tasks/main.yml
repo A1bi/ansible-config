@@ -21,6 +21,11 @@
     name: /usr/local/etc/nginx/sites-enabled
     state: directory
 
+- name: Create snippets directory
+  file:
+    name: /usr/local/etc/nginx/snippets
+    state: directory
+
 - name: Create config for default server
   template:
     src: default_server.j2
@@ -53,11 +58,6 @@
   notify:
     - Reload nginx
 
-- name: Create snippets directory
-  file:
-    name: /usr/local/etc/nginx/snippets
-    state: directory
-
 - name: Create listen config for servers
   template:
     src: server_listen.j2
@@ -75,6 +75,7 @@
     set_name: '{{ pf_set_name|default("nginx") }}'
     rules:
       - proto: tcp
+        family: '{{ "inet" if proxy_ipv4|length > 0 else "inet6" }}'
         to:
           ports: '{{ ((servers|selectattr("port","defined")|map(attribute="port")|list) + ["http", "https"])|unique|join(", ") }}'
 
@@ -102,5 +103,8 @@
     services:
       - type: remote_http
         servers: '{{ servers }}'
-        skip_ipv4: '{{ remote_monit_skip_ipv4|default(false) }}'
+        ipv4: '{{ false if remote_monit_skip_ipv4|default(false) else true }}'
   when: 'remote_monit|default(false)'
+
+- include_tasks: ipv4_proxy.yml
+  when: jailed|d(false) == false and proxy_ipv4|length > 0
