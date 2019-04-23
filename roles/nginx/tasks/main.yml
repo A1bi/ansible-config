@@ -107,4 +107,4 @@
   when: 'remote_monit|default(false)'
 
 - include_tasks: ipv4_proxy.yml
-  when: jailed|d(false) == false and proxy_ipv4|length > 0
+  when: jailed == false and proxy_ipv4|length > 0

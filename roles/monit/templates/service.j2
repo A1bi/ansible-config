@@ -1,9 +1,9 @@
 {% for service in services %}
 
   {% if service.type == 'process' %}
-    check process {{ ansible_hostname }}_{{ service.name }} with pidfile {% if jailed|d(false) %}/usr/jails/{{ ansible_hostname }}{% endif %}{{ service.pidfile }}
+    check process {{ ansible_hostname }}_{{ service.name }} with pidfile {% if jailed %}/usr/jails/{{ ansible_hostname }}{% endif %}{{ service.pidfile }}
     {% for action in ['start', 'stop'] %}
-      {{ action }} program = "/usr/sbin/service {% if jailed|d(false) %}-j {{ jail_name }}{% endif %} {{ service.name }} {{ action }}"
+      {{ action }} program = "/usr/sbin/service {% if jailed %}-j {{ jail_name }}{% endif %} {{ service.name }} {{ action }}"
     {% endfor %}
 
   {% elif service.type == 'remote_http' %}
