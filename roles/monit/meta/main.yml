@@ -1,6 +1,6 @@
 dependencies:
   - role: nginx
-    when: 'service_only|default(false) != true'
+    when: 'service_only|d(false) != true'
     vars:
       pf_set_name: monit
       servers:

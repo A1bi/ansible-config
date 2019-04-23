@@ -1,6 +1,6 @@
 - name: Set tls variable
   set_fact:
-    nginx_tls: '{{ servers|selectattr("tls","defined")|selectattr("tls")|list|length > 0 }}'
+    nginx_tls: '{{ servers|anywithattr("tls") }}'
 
 - name: Install nginx
   pkgng:
@@ -53,7 +53,7 @@
 - name: Create config for servers
   template:
     src: server.j2
-    dest: /usr/local/etc/nginx/sites-enabled/{{ item.service_name|default(item.name) }}
+    dest: /usr/local/etc/nginx/sites-enabled/{{ item.service_name|d(item.name) }}
   with_items: '{{ servers }}'
   notify:
     - Reload nginx
@@ -61,7 +61,7 @@
 - name: Create listen config for servers
   template:
     src: server_listen.j2
-    dest: /usr/local/etc/nginx/snippets/{{ item.service_name|default(item.name) }}_listen
+    dest: /usr/local/etc/nginx/snippets/{{ item.service_name|d(item.name) }}_listen
   with_items: '{{ servers }}'
   notify:
     - Reload nginx
@@ -72,12 +72,12 @@
     apply:
       delegate_to: '{{ jail_host|d(inventory_hostname) }}'
   vars:
-    set_name: '{{ pf_set_name|default("nginx") }}'
+    set_name: '{{ pf_set_name|d("nginx") }}'
     rules:
       - proto: tcp
         family: '{{ "inet" if proxy_ipv4|length > 0 else "inet6" }}'
         to:
-          ports: '{{ ((servers|selectattr("port","defined")|map(attribute="port")|list) + ["http", "https"])|unique|join(", ") }}'
+          ports: '{{ (servers|pluck("port", "https") + ["http", "https"])|unique|join(", ") }}'
 
 - name: Add monit service
   include_role:
@@ -103,8 +103,8 @@
     services:
       - type: remote_http
         servers: '{{ servers }}'
-        ipv4: '{{ false if remote_monit_skip_ipv4|default(false) else true }}'
-  when: 'remote_monit|default(false)'
+        ipv4: '{{ false if remote_monit_skip_ipv4|d(false) else true }}'
+  when: 'remote_monit|d(false)'
 
 - include_tasks: ipv4_proxy.yml
   when: jailed == false and proxy_ipv4|length > 0

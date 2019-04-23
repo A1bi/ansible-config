@@ -32,7 +32,7 @@
     line: "{{ ansible_all_ipv6_addresses[0] }}\t{{ inventory_hostname }}"
   notify:
     - Reload pf
-  when: jailed|default(false) == true
+  when: jailed|d(false) == true
 
 - name: Create ruleset
   blockinfile:

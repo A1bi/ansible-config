@@ -4,7 +4,7 @@
     state: present
 
 - name: Create letsencrypt certificate
-  command: certbot-3.6 certonly -n --agree-tos -m albrecht@oster.online --expand --webroot -w /usr/local/www -d {{ item.name }} {% if item.www_subdomain|default(false) %}-d www.{{ item.name }}{% endif %}
+  command: certbot-3.6 certonly -n --agree-tos -m albrecht@oster.online --expand --webroot -w /usr/local/www -d {{ item.name }} {% if item.www_subdomain|d(false) %}-d www.{{ item.name }}{% endif %}
   with_items: '{{ servers }}'
   register: certbot_result
   changed_when: '"Congratulations!" in certbot_result.stdout'

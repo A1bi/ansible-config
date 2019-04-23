@@ -1,6 +1,6 @@
 {% if item.tls %}
-  listen [::]:{{ item.port|default(443) }} ssl http2;
-  {% if item.proxy_protocol|default(true) %}
+  listen [::]:{{ item.port|d(443) }} ssl http2;
+  {% if item.proxy_protocol|d(true) %}
     listen [::]:8443 ssl proxy_protocol http2;
   {% endif %}
 
