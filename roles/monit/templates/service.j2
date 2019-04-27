@@ -1,7 +1,7 @@
 {% for service in services %}
 
   {% if service.type == 'process' %}
-    check process {{ ansible_hostname }}_{{ service.name }} with pidfile {% if jailed %}/usr/jails/{{ ansible_hostname }}{% endif %}{{ service.pidfile }}
+    check process {% if jailed %}{{ jail_name }}_{% endif %}{{ service.name }} with pidfile {% if jailed %}/usr/jails/{{ jail_name }}{% endif %}{{ service.pidfile }}
     {% for action in ['start', 'stop'] %}
       {{ action }} program = "/usr/sbin/service {% if jailed %}-j {{ jail_name }}{% endif %} {{ service.name }} {{ action }}"
     {% endfor %}

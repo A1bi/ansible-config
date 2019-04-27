@@ -39,7 +39,7 @@
 - name: Create ruleset
   blockinfile:
     path: /etc/pf.conf
-    marker: '# {{ set_host|d(ansible_hostname) }}: {{ set_name }} {mark}'
+    marker: '# {% if jailed %}{{ jail_name }}: {% endif %}{{ set_name }} {mark}'
     block: '{{ lookup("template", "ruleset.j2") }}'
     state: present
   notify:

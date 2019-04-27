@@ -2,12 +2,6 @@
   roles:
     - name: monit
 
-- hosts: jails
-  tasks:
-    - name: Set jail name
-      set_fact:
-        jail_name: '{{ ansible_hostname|replace("-", "_") }}'
-
 - hosts: nsd_servers
   roles:
     - nsd
