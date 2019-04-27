@@ -1,0 +1,24 @@
+nsd_master_addr: 2a01:4f8:1c1c:3df7::6
+nsd_slave_addr: 2a01:4f8:1c0c:5363::5
+nsd_zones:
+  - name: 3d-podcast.de
+    serial: 2019040800
+    names:
+      - name: '@'
+        records:
+          - type: AAAA
+            value: 2a01:4f8:1c1c:3df7::3d
+          - type: A
+            value: 159.69.29.179
+      - name: www
+        records:
+          - type: AAAA
+            value: 2a01:4f8:1c1c:3df7::3d
+          - type: A
+            value: 159.69.29.179
+    include_mx: true
+    dkim:
+      key_line_1: p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA32J7vHsNvBdVGCXuWbpw2qrfJ64mSYAqGveL9BjpQNY8iDfMo5aA6qQaNMzuuwZwbw2iUrfEFIzu+BqRJ1ufGsHUp0XXmhmLXfJEafVXcjLP3Mc/EMFRqbd9Gk8T0tFRhr1gBDpHa8wox5DxXYfWI1Ke2XFuxGT8qyWj6pURsNkV/TYQjUfnYNcYh2ODu7FEkg0xy/6yVHbZZihaF
+      key_line_2: cgKKceEMl3vk9VEk8VJnUb26M0F+KqCFj2rFXThdvWevb6EouTUG3bIw/QmUnThd9csnxItfL7EkxO4+Q8R2lQ1ty3JvuKMlZaM/iuaU6Yie+LeJ4wDcYkzSXreilmSkWLRpQIDAQAB
+  - name: dyn.a0s.de
+    locally_managed: true

@@ -1,0 +1,66 @@
+- name: Install nsd
+  pkgng:
+    name: nsd
+    state: present
+  notify:
+    - Start nsd
+
+- name: Create main config
+  template:
+    src: nsd.conf.j2
+    dest: /usr/local/etc/nsd/nsd.conf
+  notify:
+    - Reconfig nsd
+
+- name: Create zones directory
+  file:
+    name: /usr/local/etc/nsd/zones
+    state: directory
+
+- name: Setup nsd-control
+  command: /usr/local/sbin/nsd-control-setup
+  args:
+    creates: /usr/local/etc/nsd/nsd_control.pem
+
+- name: Create zonefiles
+  template:
+    src: zonefile.zone.j2
+    dest: '/usr/local/etc/nsd/zones/{{ item.name }}.zone'
+  with_items: '{{ nsd_zones|selectattr("locally_managed", false, false) }}'
+  when: 'nsd_role == "master"'
+  notify:
+    - Reload nsd
+
+- name: Create locally managed zonefiles
+  file:
+    path: '/usr/local/etc/nsd/zones/{{ item.name }}.zone'
+    state: touch
+  with_items: '{{ nsd_zones|selectattr("locally_managed", true, false) }}'
+  when: 'nsd_role == "master"'
+  notify:
+    - Reload nsd
+
+- name: Create firewall rules
+  include_role:
+    name: pf
+    apply:
+      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
+  vars:
+    set_name: nsd
+    rules:
+      - proto: udp
+        to:
+          ports: dns
+
+- name: Add monit service
+  include_role:
+    name: monit
+    apply:
+      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
+  vars:
+    service_only: true
+    set_name: nsd
+    services:
+      - type: process
+        name: nsd
+        pidfile: /var/run/nsd/nsd.pid

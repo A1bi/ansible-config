@@ -1,0 +1,32 @@
+server:
+  zonesdir: "/usr/local/etc/nsd/zones"
+  logfile: "/var/log/nsd.log"
+
+remote-control:
+  control-enable: yes
+  control-interface: ::1
+
+key:
+  name: "dnskey"
+  algorithm: sha256
+  #secret: "{{ nsd_xfr_key }}"
+  secret: "MTIzCg=="
+
+pattern:
+  name: "toslave"
+  zonefile: "%s.zone"
+  notify: {{ nsd_slave_addr }} dnskey
+  provide-xfr: {{ nsd_slave_addr }} dnskey
+
+pattern:
+  name: "frommaster"
+  zonefile: "%s.zone"
+  allow-notify: {{ nsd_master_addr }} dnskey
+  request-xfr: AXFR {{ nsd_master_addr }} dnskey
+
+{% for zone in nsd_zones %}
+zone:
+  name: "{{ zone.name }}"
+  include-pattern: "{{ (nsd_role == 'master')|ternary('toslave', 'frommaster') }}"
+
+{% endfor %}

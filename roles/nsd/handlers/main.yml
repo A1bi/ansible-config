@@ -1,0 +1,14 @@
+- name: Start nsd
+  service:
+    name: nsd
+    state: started
+    enabled: yes
+
+- name: Reload nsd
+  service:
+    name: nsd
+    state: reloaded
+    enabled: yes
+
+- name: Reconfig nsd
+  command: nsd-control reconfig
