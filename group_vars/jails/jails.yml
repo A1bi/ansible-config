@@ -1,0 +1,2 @@
+jailed: true
+ansible_user: root

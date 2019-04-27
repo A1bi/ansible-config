@@ -5,9 +5,11 @@
     create: true
     insertbefore: BOF
     block: |
-      int_if = {{ ansible_interfaces[0] }}
+      int_if = {{ ext_interface }}
       localnet = $int_if:network
       set skip on lo0
+      set block-policy return
+      scrub in all fragment reassemble
   notify:
     - Start pf
 

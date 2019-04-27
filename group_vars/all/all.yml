@@ -1,0 +1,4 @@
+ansible_python_interpreter: /usr/local/bin/python3
+remote_monit_host: blacky.dyn.a0s.de
+jailed: false
+jail_host: null
