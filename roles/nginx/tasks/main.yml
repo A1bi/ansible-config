@@ -72,10 +72,10 @@
     apply:
       delegate_to: '{{ jail_host|d(inventory_hostname) }}'
   vars:
-    set_name: '{{ pf_set_name|d("nginx") }}'
+    set_name: '{{ (proxy_ipv4 is defined)|ternary("proxy IPv4", pf_set_name|d("nginx")) }}'
     rules:
       - proto: tcp
-        family: '{{ "inet" if proxy_ipv4|length > 0 else "inet6" }}'
+        family: '{{ "inet" if proxy_ipv4 is defined else "inet6" }}'
         to:
           ports: '{{ (servers|pluck("port", "https") + ["http", "https"])|unique|join(", ") }}'
 
@@ -107,4 +107,4 @@
   when: 'remote_monit|d(false)'
 
 - include_tasks: ipv4_proxy.yml
-  when: jailed == false and proxy_ipv4|length > 0
+  when: jailed == false and proxy_ipv4 is defined

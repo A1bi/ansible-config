@@ -5,3 +5,30 @@
 - hosts: nsd_servers
   roles:
     - nsd
+
+- hosts: hope.a0s.de
+  roles:
+    - name: nginx
+      proxy_ipv4: []
+
+- hosts: claude.a0s.de
+  roles:
+    - name: nginx
+      proxy_ipv4: []
+
+- hosts: blacky.dyn.a0s.de
+  roles:
+    - name: monit
+      service_only: true
+      set_name: 'remote_http'
+      services:
+        - type: remote_http
+          servers:
+            - name: theater-kaisersesch.de
+              www_subdomain: true
+              tls: true
+            - name: larakraemer.com
+              www_subdomain: true
+              tls: true
+              target_status_code: 302
+          ipv4: true
