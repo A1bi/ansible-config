@@ -1,0 +1,19 @@
+{% for server in nginx_servers %}
+  ### {{ server.name }}
+  {% include 'server.j2' %}
+{% endfor %}
+
+{% if nginx_monit %}
+  ### Monit
+  {% with server = {
+    'name': inventory_hostname,
+    'port': 2812,
+    'tls': true,
+    'proxy_protocol': false,
+    'locations': [
+      { 'path': '/', 'proxy': { 'pass': 'http://unix:/var/run/monit.sock' } }
+    ]
+  } %}
+    {% include 'server.j2' %}
+  {% endwith %}
+{% endif %}

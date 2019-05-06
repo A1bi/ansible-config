@@ -1,22 +1,12 @@
 - hosts: jail_hosts
   roles:
-    - name: monit
+    - pf
+    - monit
 
 - hosts: blacky.dyn.a0s.de
   roles:
-    - name: nginx
-      proxy_ipv4:
-        - host: ansible-sandbox.dyn.a0s.de
-          names:
-            - testy.ansible-sandbox.dyn.a0s.de
-            - www.testy.ansible-sandbox.dyn.a0s.de
+    - nginx
 
 - hosts: ansible-sandbox.dyn.a0s.de
   roles:
-    - name: nginx
-      servers:
-        - name: testy.ansible-sandbox.dyn.a0s.de
-          tls: true
-          www_subdomain: true
-      remote_monit: true
-      remote_monit_skip_ipv4: true
+    - nginx

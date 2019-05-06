@@ -1,1 +1,15 @@
 ext_interface: em0
+
+nginx_monit: true
+nginx_proxy_ipv4: true
+
+monit_remote_http:
+  servers:
+    - name: theater-kaisersesch.de
+      www_subdomain: true
+      tls: true
+    - name: larakraemer.com
+      www_subdomain: true
+      tls: true
+      target_status_code: 302
+  ipv4: true

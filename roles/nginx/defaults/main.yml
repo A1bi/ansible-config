@@ -1,1 +1,3 @@
-servers: []
+nginx_servers: []
+nginx_monit: false
+nginx_proxy_ipv4: false

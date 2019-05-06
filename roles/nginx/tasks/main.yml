@@ -1,6 +1,6 @@
 - name: Set tls variable
   set_fact:
-    nginx_tls: '{{ servers|anywithattr("tls") }}'
+    nginx_tls: '{{ nginx_servers|anywithattr("tls") }}'
 
 - name: Install nginx
   pkgng:
@@ -10,8 +10,8 @@
     - Start nginx
 
 - name: Copy basic nginx config
-  copy:
-    src: nginx.conf
+  template:
+    src: nginx.conf.j2
     dest: /usr/local/etc/nginx/nginx.conf
   notify:
     - Reload nginx
@@ -40,71 +40,22 @@
 
 - name: Create root directory for servers
   file:
-    name: /usr/local/www/{{ item.name }}
+    name: '{{ (item.root|d(item.name)).startswith("/")|ternary(item.root|d(item.name), "/usr/local/www/" + (item.root|d(item.name))) }}'
     state: directory
-  with_items: '{{ servers }}'
+  with_items: '{{ nginx_servers }}'
 
-- name: Force start/reload nginx
+- name: Create config for servers
+  template:
+    src: servers.j2
+    dest: /usr/local/etc/nginx/sites-enabled/servers
+  notify:
+    - Reload nginx
+
+- import_tasks: ipv4_proxy.yml
+  when: nginx_proxy_ipv4
+
+- name: Force start/reload nginx and pf so Letsencrypt can contact this server
   meta: flush_handlers
 
 - import_tasks: tls.yml
   when: nginx_tls
-
-- name: Create config for servers
-  template:
-    src: server.j2
-    dest: /usr/local/etc/nginx/sites-enabled/{{ item.service_name|d(item.name) }}
-  with_items: '{{ servers }}'
-  notify:
-    - Reload nginx
-
-- name: Create listen config for servers
-  template:
-    src: server_listen.j2
-    dest: /usr/local/etc/nginx/snippets/{{ item.service_name|d(item.name) }}_listen
-  with_items: '{{ servers }}'
-  notify:
-    - Reload nginx
-
-- name: Create firewall rules
-  include_role:
-    name: pf
-    apply:
-      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
-  vars:
-    set_name: '{{ (proxy_ipv4 is defined)|ternary("proxy IPv4", pf_set_name|d("nginx")) }}'
-    rules:
-      - proto: tcp
-        family: '{{ "inet" if proxy_ipv4 is defined else "inet6" }}'
-        to:
-          ports: '{{ (servers|pluck("port", "https") + ["http", "https"])|unique|join(", ") }}'
-
-- name: Add monit service
-  include_role:
-    name: monit
-    apply:
-      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
-  vars:
-    service_only: true
-    set_name: nginx
-    services:
-      - type: process
-        name: nginx
-        pidfile: /var/run/nginx.pid
-
-- name: Add remote monit service
-  include_role:
-    name: monit
-    apply:
-      delegate_to: '{{ remote_monit_host }}'
-  vars:
-    service_only: true
-    set_name: '{{ ansible_hostname }}_remote_http'
-    services:
-      - type: remote_http
-        servers: '{{ servers }}'
-        ipv4: '{{ false if remote_monit_skip_ipv4|d(false) else true }}'
-  when: 'remote_monit|d(false)'
-
-- include_tasks: ipv4_proxy.yml
-  when: jailed == false and proxy_ipv4 is defined

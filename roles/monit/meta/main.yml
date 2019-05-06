@@ -1,15 +1,2 @@
 dependencies:
   - role: nginx
-    when: 'service_only|d(false) != true'
-    vars:
-      pf_set_name: monit
-      servers:
-        - name: '{{ inventory_hostname }}'
-          service_name: monit
-          port: 2812
-          tls: true
-          proxy_protocol: false
-          locations:
-            - path: /
-              proxy:
-                pass: http://unix:/var/run/monit.sock

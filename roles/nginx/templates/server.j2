@@ -1,14 +1,14 @@
 server {
-  include snippets/{{ item.service_name|d(item.name) }}_listen;
+  {% include 'server_listen.j2' %}
 
   server_name
-    {% if item.www_subdomain|d(false) %}www.{% endif %}{{ item.name }}
-    {% for alt in item.alternatives|d([]) %}
+    {% if server.www_subdomain|d(false) %}www.{% endif %}{{ server.name }}
+    {% for alt in server.alternatives|d([]) %}
       {% if alt.www_subdomain|d(false) %}www.{% endif %}{{ alt.name }}
     {% endfor %}
   ;
 
-  {% for location in item.locations|d([]) %}
+  {% for location in server.locations|d([]) %}
     location {{ location.path }} {
       {% if location.proxy|d(false) %}
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -20,18 +20,18 @@ server {
     }
   {% endfor %}
 
-  root /usr/local/www/{{ item.name }};
+  root {{ (server.root|d(server.name)).startswith('/')|ternary(server.root|d(server.name), '/usr/local/www/' + (server.root|d(server.name))) }};
 }
 
-{% if item.www_subdomain|d(false) or item.alternatives|d([])|anywithattr('www_subdomain') %}
+{% if server.www_subdomain|d(false) or server.alternatives|d([])|anywithattr('www_subdomain') %}
   ## redirect missing www.
 
   server {
-    include snippets/{{ item.service_name|d(item.name) }}_listen;
+    {% include 'server_listen.j2' %}
 
     server_name
-      {% if item.www_subdomain|d(false) %}{{ item.name }}{% endif %}
-      {% for alt in item.alternatives|d([])|selectattr('www_subdomain', 'defined')|selectattr('www_subdomain') %}
+      {% if server.www_subdomain|d(false) %}{{ server.name }}{% endif %}
+      {% for alt in server.alternatives|d([])|selectattr('www_subdomain', true, false) %}
         {{ alt.name }}
       {% endfor %}
     ;

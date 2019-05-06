@@ -1,3 +1,7 @@
+{% if nginx_proxy_ipv4 %}
+  load_module /usr/local/libexec/nginx/ngx_stream_module.so;
+{% endif %}
+
 user  www;
 worker_processes  2;
 
@@ -31,4 +35,12 @@ http {
   add_header X-Content-Type-Options nosniff;
 
   include /usr/local/etc/nginx/sites-enabled/*;
+
+  {% if nginx_proxy_ipv4 %}
+    include /usr/local/etc/nginx/ipv4_http_proxy.conf;
+  {% endif %}
 }
+
+{% if nginx_proxy_ipv4 %}
+  include /usr/local/etc/nginx/ipv4_https_proxy.conf;
+{% endif %}

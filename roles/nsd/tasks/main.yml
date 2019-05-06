@@ -39,28 +39,3 @@
   when: 'nsd_role == "master"'
   notify:
     - Reload nsd
-
-- name: Create firewall rules
-  include_role:
-    name: pf
-    apply:
-      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
-  vars:
-    set_name: nsd
-    rules:
-      - proto: udp
-        to:
-          ports: dns
-
-- name: Add monit service
-  include_role:
-    name: monit
-    apply:
-      delegate_to: '{{ jail_host|d(inventory_hostname) }}'
-  vars:
-    service_only: true
-    set_name: nsd
-    services:
-      - type: process
-        name: nsd
-        pidfile: /var/run/nsd/nsd.pid

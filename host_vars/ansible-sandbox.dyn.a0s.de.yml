@@ -1,1 +1,10 @@
 jail_name: ansible-sandbox
+
+nginx_servers:
+  - name: testy.ansible-sandbox.dyn.a0s.de
+    tls: true
+    www_subdomain: true
+    root: testy
+    proxy_ipv4: true
+    remote_monit: true
+    remote_monit_skip_ipv4: true

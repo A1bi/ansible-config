@@ -1,10 +1,22 @@
-{% for proxy in proxy_ipv4 %}
-  server {
-    listen 80;
-    server_name {% for name in proxy.names %} {{ name }}{% endfor %};
-    location / {
-      include snippets/proxy_real_ip;
-      proxy_pass http://{{ proxy.host }}:80;
+{% for jail in groups[inventory_hostname_short + '_jails'] %}
+  {% set jail = hostvars[jail] %}
+  {% for server in jail.nginx_servers|d([])|selectattr('proxy_ipv4', true, false) %}
+    server {
+      listen 80;
+
+      server_name
+        {{ server.name }}
+        {% if server.www_subdomain|d(false) %}www.{{ server.name }}{% endif %}
+        {% for alt in server.alternatives|d([]) %}
+          {{ alt.name }}
+          {% if alt.www_subdomain|d(false) %}www.{{ alt.name }}{% endif %}
+        {% endfor %}
+      ;
+
+      location / {
+        include snippets/proxy_real_ip;
+        proxy_pass http://{{ jail.inventory_hostname }}:80;
+      }
     }
-  }
+  {% endfor %}
 {% endfor %}
