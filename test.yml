@@ -4,8 +4,7 @@
     - monit
 
 - hosts: blacky.dyn.a0s.de
-  roles:
-    - nginx
+  roles: []
 
 - hosts: ansible-sandbox.dyn.a0s.de
   roles:

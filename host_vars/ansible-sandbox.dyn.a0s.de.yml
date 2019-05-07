@@ -6,5 +6,6 @@ nginx_servers:
     www_subdomain: true
     root: testy
     proxy_ipv4: true
-    remote_monit: true
-    remote_monit_skip_ipv4: true
+    monit_remote: false
+    monit_remote_skip_ipv4: true
+    monit_remote_target_status_code: 404

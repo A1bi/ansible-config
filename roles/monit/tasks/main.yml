@@ -22,8 +22,7 @@
 
 - name: Add monitered services
   template:
-    src: service.j2
-    dest: '/usr/local/etc/monit.d/{% if jailed %}{{ jail_name }}_{% endif %}{{ set_name }}'
+    src: services.j2
+    dest: /usr/local/etc/monit.d/services
   notify:
     - Reload monit
-  when: services is defined

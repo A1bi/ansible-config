@@ -1,6 +1,6 @@
 - name: Set tls variable
   set_fact:
-    nginx_tls: '{{ nginx_servers|anywithattr("tls") }}'
+    nginx_tls: '{{ nginx_servers|anywithattr("tls") or nginx_monit }}'
 
 - name: Install nginx
   pkgng:

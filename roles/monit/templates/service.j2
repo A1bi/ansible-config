@@ -1,45 +1,6 @@
-{% for service in services %}
-
-  {% if service.type == 'process' %}
-    check process {% if jailed %}{{ jail_name }}_{% endif %}{{ service.name }} with pidfile {% if jailed %}/usr/jails/{{ jail_name }}{% endif %}{{ service.pidfile }}
-    {% for action in ['start', 'stop'] %}
-      {{ action }} program = "/usr/sbin/service {% if jailed %}-j {{ jail_name }}{% endif %} {{ service.name }} {{ action }}"
-    {% endfor %}
-
-  {% elif service.type == 'remote_http' %}
-    {% for server in service.servers %}
-      {% set target_status_code = server.target_status_code|d(200) %}
-      check host {{ server.name }} with address {{ server.name }}
-        {% for proto in (['ipv6'] + (['ipv4'] if service.ipv4 else [])) %}
-          if failed port 80 protocol http status = {{ (server.tls|d(false) or server.www_subdomain|d(false))|ternary(301, target_status_code) }} {{ proto }} then alert every 10 cycles
-          {% if server.tls|d(false) %}
-            if failed port 443 protocol https status = {{ server.www_subdomain|d(false)|ternary(301, target_status_code) }} {{ proto }} then alert every 10 cycles
-          {% endif %}
-          {% if server.www_subdomain|d(false) %}
-            {% if server.tls|d(false) %}
-              if failed host www.{{ server.name }} port 80 protocol http status = 301 {{ proto }} then alert every 10 cycles
-              if failed host www.{{ server.name }} port 443 protocol https status = {{ target_status_code }} {{ proto }} then alert every 10 cycles
-            {% else %}
-              if failed host www.{{ server.name }} port 80 protocol http status = {{ target_status_code }} {{ proto }} then alert every 10 cycles
-            {% endif %}
-          {% endif %}
-
-          {% for alt in server.alternatives|d([]) %}
-            if failed host {{ alt.name }} port 80 protocol http status = {{ (server.tls|d(false) or alt.www_subdomain|d(false))|ternary(301, target_status_code) }} {{ proto }} then alert every 10 cycles
-            {% if server.tls|d(false) %}
-              if failed host {{ alt.name }} port 443 protocol https status = {{ alt.www_subdomain|d(false)|ternary(301, target_status_code) }} {{ proto }} then alert every 10 cycles
-            {% endif %}
-            {% if alt.www_subdomain|d(false) %}
-              {% if alt.tls|d(false) %}
-                if failed host www.{{ alt.name }} port 80 protocol http status = 301 {{ proto }} then alert every 10 cycles
-                if failed host www.{{ alt.name }} port 443 protocol https status = {{ target_status_code }} {{ proto }} then alert every 10 cycles
-              {% else %}
-                if failed host www.{{ alt.name }} port 80 protocol http status = {{ target_status_code }} {{ proto }} then alert every 10 cycles
-              {% endif %}
-            {% endif %}
-          {% endfor %}
-        {% endfor %}
-    {% endfor %}
-  {% endif %}
-
-{% endfor %}
+{% if service.type == 'process' %}
+  check process {% if jailed %}{{ jail_name }}_{% endif %}{{ service.name }} with pidfile {% if jailed %}/usr/jails/{{ jail_name }}{% endif %}{{ service.pidfile }}
+  {% for action in ['start', 'stop'] %}
+    {{ action }} program = "/usr/sbin/service {% if jailed %}-j {{ jail_name }}{% endif %} {{ service.name }} {{ action }}"
+  {% endfor %}
+{% endif %}
