@@ -1,46 +1,31 @@
-- name: Add pf setup
-  blockinfile:
-    path: /etc/pf.conf
-    marker: '# setup {mark}'
-    create: true
-    insertbefore: BOF
-    block: |
-      int_if = {{ ext_interface }}
-      localnet = $int_if:network
-      set skip on lo0
-      set block-policy return
-      scrub in all fragment reassemble
-  notify:
-    - Start pf
+- name: gather facts from db servers
+  setup:
+  delegate_to: '{{ item }}'
+  delegate_facts: true
+  loop: '{{ groups[inventory_hostname_short + "_jails"] }}'
 
-- name: Add general block and ssh rule
-  blockinfile:
-    dest: /etc/pf.conf
-    marker: '# general block and ssh {mark}'
-    state: present
-    block: |
-      block in all
-      pass out all
-      pass in proto { icmp6, icmp } all
-
-      pass in inet6 proto tcp to port ssh
-  notify:
-    - Start pf
-
-- name: Add host to /etc/hosts
+- name: Add IPv6 host to /etc/hosts
   lineinfile:
     path: /etc/hosts
-    regexp: '{{ inventory_hostname }}'
-    line: "{{ ansible_all_ipv6_addresses[0] }}\t{{ inventory_hostname }}"
+    regexp: ':.*{{ hostvars[item].inventory_hostname }}'
+    line: "{{ hostvars[item].ansible_all_ipv6_addresses[0] }}\t{{ hostvars[item].inventory_hostname }}"
+  with_items: '{{ groups[inventory_hostname_short + "_jails"] }}'
   notify:
     - Reload pf
-  when: jailed|d(false) == true
 
-- name: Create ruleset
-  blockinfile:
-    path: /etc/pf.conf
-    marker: '# {% if jailed %}{{ jail_name }}: {% endif %}{{ set_name }} {mark}'
-    block: '{{ lookup("template", "ruleset.j2") }}'
-    state: present
+- name: Add IPv4 host to /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '\..*{{ hostvars[item].inventory_hostname }}'
+    line: "{{ hostvars[item].ansible_all_ipv4_addresses[0] }}\t{{ hostvars[item].inventory_hostname }}"
+  when: hostvars[item].ansible_all_ipv4_addresses|length > 0
+  with_items: '{{ groups[inventory_hostname_short + "_jails"] }}'
+  notify:
+    - Reload pf
+
+- name: Create pf.conf
+  template:
+    src: pf.conf.j2
+    dest: /etc/pf.conf
   notify:
     - Reload pf

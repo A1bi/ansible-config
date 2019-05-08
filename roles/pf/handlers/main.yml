@@ -3,12 +3,7 @@
     name: pf
     state: started
     enabled: yes
+  listen: Reload pf
 
 - name: Reload pf
   command: pfctl -f /etc/pf.conf
-
-- name: Enable pf
-  service:
-    name: pf
-    enabled: yes
-  listen: Reload pf

@@ -1,0 +1,6 @@
+{% for jail in groups[inventory_hostname_short + '_jails'] %}
+  {% set jail = hostvars[jail] %}
+  {% if jail.nsd_zones is defined %}
+pass in inet6 proto { tcp, udp } to {{ jail.inventory_hostname }} port domain
+  {% endif %}
+{% endfor %}

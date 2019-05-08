@@ -1,0 +1,25 @@
+int_if = {{ ext_interface }}
+localnet = $int_if:network
+set skip on lo0
+set block-policy return
+scrub in all fragment reassemble
+
+{% include 'rules/nsd_rdr.j2' %}
+
+{% for rdr in pf_rdr %}
+rdr pass on $int_if inet proto {{ rdr.proto }} to $int_if port { {{ rdr.ports }} } -> {{ rdr.target }}
+{% endfor %}
+
+block in all
+pass out all
+pass in proto { icmp6, icmp } all
+
+# allow ssh to host and all jails
+pass in inet6 proto tcp to port ssh
+
+{% include 'rules/nginx.j2' %}
+{% include 'rules/nsd.j2' %}
+
+{% for rule in pf_rules %}
+  {{- rule.action|d('pass') }} {{ rule.direction|d('in') }} {{ rule.family|d('inet6') }} proto {{ rule.proto }} to {{ rule.to.address|d(inventory_hostname) }} port { {{ rule.to.ports }} }
+{% endfor %}

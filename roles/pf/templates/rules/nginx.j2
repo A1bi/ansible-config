@@ -1,0 +1,17 @@
+{% if nginx_monit|d(false) %}
+# allow monit to host
+pass in inet6 proto tcp to port { http, 2812 }
+{% endif %}
+
+{% if nginx_proxy_ipv4 %}
+# allow nginx via ipv4 to host for ipv4 proxying
+pass in inet proto tcp to port { http, https }
+{% endif %}
+
+{% for jail in groups[inventory_hostname_short + '_jails'] %}
+  {% set jail = hostvars[jail] %}
+  {% if jail.nginx_servers is defined %}
+# allow nginx to jail {{ jail.inventory_hostname_short }}
+pass in inet6 to {{ jail.inventory_hostname }} port { {{ (['http', 'https'] + jail.nginx_servers|pluck('port', 'https'))|unique|join(', ') }} }
+  {% endif %}
+{% endfor %}

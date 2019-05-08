@@ -1,3 +1,0 @@
-{% for rule in rules %}
-  {{- rule.action|d('pass') }} {{ rule.direction|d('in') }} {{ rule.family|d('inet6') }} proto {{ rule.proto }} to {{ rule.to.address|d(inventory_hostname) }} port { {{ rule.to.ports }} }
-{% endfor %}
