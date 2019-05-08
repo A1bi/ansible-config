@@ -1,0 +1,16 @@
+### nsd jails
+
+{% for jail in groups[inventory_hostname_short + '_jails'] %}
+  {% set jail = hostvars[jail] %}
+  {% if jail.nsd_zones is defined %}
+    ## {{ jail.jail_name }}
+    {% with service = {
+      'type': 'process',
+      'name': 'nsd',
+      'pidfile': '/var/run/nsd/nsd.pid',
+      'jail': jail.jail_name
+    } %}
+      {% include 'service.j2' %}
+    {% endwith %}
+  {% endif %}
+{% endfor %}

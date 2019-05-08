@@ -1,21 +1,8 @@
-### host nginx
+{% include 'services/nginx.j2' %}
+{% include 'services/nsd.j2' %}
 
-{% with service = {
-  'type': 'process',
-  'name': 'nginx',
-  'pidfile': '/var/run/nginx.pid'
-} %}
-  {% include 'service.j2' %}
-{% endwith %}
-
-### services
+### additional services
 
 {% for service in monit_services %}
   {% include 'service.j2' %}
 {% endfor %}
-
-### remote http
-
-{% if monit_remote_http %}
-  {% include 'remote_http.j2' %}
-{% endif %}

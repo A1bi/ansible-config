@@ -11,7 +11,7 @@ pass in inet proto tcp to port { http, https }
 {% for jail in groups[inventory_hostname_short + '_jails'] %}
   {% set jail = hostvars[jail] %}
   {% if jail.nginx_servers is defined %}
-# allow nginx to jail {{ jail.inventory_hostname_short }}
+# allow nginx to jail {{ jail.jail_name }}
 pass in inet6 to {{ jail.inventory_hostname }} port { {{ (['http', 'https'] + jail.nginx_servers|pluck('port', 'https'))|unique|join(', ') }} }
   {% endif %}
 {% endfor %}

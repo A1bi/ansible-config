@@ -1,6 +1,6 @@
 {% if service.type == 'process' %}
-  check process {% if jailed %}{{ jail_name }}_{% endif %}{{ service.name }} with pidfile {% if jailed %}/usr/jails/{{ jail_name }}{% endif %}{{ service.pidfile }}
+  check process {% if service.jail is defined %}{{ service.jail }}_{% endif %}{{ service.name }} with pidfile {% if service.jail is defined %}/usr/jails/{{ service.jail }}{% endif %}{{ service.pidfile }}
   {% for action in ['start', 'stop'] %}
-    {{ action }} program = "/usr/sbin/service {% if jailed %}-j {{ jail_name }}{% endif %} {{ service.name }} {{ action }}"
+    {{ action }} program = "/usr/sbin/service {% if service.jail is defined %}-j {{ service.jail }}{% endif %} {{ service.name }} {{ action }}"
   {% endfor %}
 {% endif %}

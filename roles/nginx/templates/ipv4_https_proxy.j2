@@ -1,17 +1,17 @@
 stream {
   {% for jail in groups[inventory_hostname_short + '_jails'] %}
     {% set jail = hostvars[jail] %}
-    upstream {{ jail.inventory_hostname_short }} {
+    upstream {{ jail.jail_name }} {
       server {{ jail.inventory_hostname }}:8443 fail_timeout=1s;
     }
 
     {% for server in jail.nginx_servers|d([])|selectattr('proxy_ipv4', true, false) %}
       map $ssl_preread_server_name $name {
-        {{ server.name }} {{ jail.inventory_hostname_short }};
-        {% if server.www_subdomain|d(false) %}www.{{ server.name }} {{ jail.inventory_hostname_short }};{% endif %}
+        {{ server.name }} {{ jail.jail_name }};
+        {% if server.www_subdomain|d(false) %}www.{{ server.name }} {{ jail.jail_name }};{% endif %}
         {% for alt in server.alternatives|d([]) %}
-          {{ alt.name }} {{ jail.inventory_hostname_short }};
-          {% if alt.www_subdomain|d(false) %}www.{{ alt.name }} {{ jail.inventory_hostname_short }};{% endif %}
+          {{ alt.name }} {{ jail.jail_name }};
+          {% if alt.www_subdomain|d(false) %}www.{{ alt.name }} {{ jail.jail_name }};{% endif %}
         {% endfor %}
       }
     {% endfor %}

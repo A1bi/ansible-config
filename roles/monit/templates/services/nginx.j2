@@ -1,0 +1,32 @@
+### nginx host
+
+{% with service = {
+  'type': 'process',
+  'name': 'nginx',
+  'pidfile': '/var/run/nginx.pid'
+} %}
+  {% include 'service.j2' %}
+{% endwith %}
+
+### nginx remote http
+
+{% if monit_remote_http %}
+  {% include 'remote_http.j2' %}
+{% endif %}
+
+### nginx jails
+
+{% for jail in groups[inventory_hostname_short + '_jails'] %}
+  {% set jail = hostvars[jail] %}
+  {% if jail.nginx_servers is defined %}
+    ## {{ jail.jail_name }}
+    {% with service = {
+      'type': 'process',
+      'name': 'nginx',
+      'pidfile': '/var/run/nginx.pid',
+      'jail': jail.jail_name
+    } %}
+      {% include 'service.j2' %}
+    {% endwith %}
+  {% endif %}
+{% endfor %}
