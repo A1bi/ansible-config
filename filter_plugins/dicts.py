@@ -13,10 +13,14 @@ def select_attr(collection, key, value, default=None):
   else:
     return [el for el in collection if el.get(key, default) == value]
 
+def primary_ipv6_address(host):
+  return next(address for address in host['all_ipv6_addresses'] if address.startswith('2'))
+
 class FilterModule(object):
   def filters(self):
     return {
      'pluck': pluck,
      'anywithattr': any_with_attr,
-     'selectattr': select_attr
+     'selectattr': select_attr,
+     'primaryipv6address': primary_ipv6_address
     }

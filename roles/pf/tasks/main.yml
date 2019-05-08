@@ -4,7 +4,23 @@
   delegate_facts: true
   loop: '{{ groups[inventory_hostname_short + "_jails"] }}'
 
-- name: Add IPv6 host to /etc/hosts
+- name: Add host to /etc/hosts (IPv6)
+  lineinfile:
+    path: /etc/hosts
+    regexp: ':.*{{ inventory_hostname }}'
+    line: "{{ ansible_facts|primaryipv6address }}\t{{ inventory_hostname }}"
+  notify:
+    - Reload pf
+
+- name: Add host to /etc/hosts (IPv4)
+  lineinfile:
+    path: /etc/hosts
+    regexp: '\..*{{ inventory_hostname }}'
+    line: "{{ ansible_default_ipv4.address }}\t{{ inventory_hostname }}"
+  notify:
+    - Reload pf
+
+- name: Add jails to /etc/hosts (IPv6)
   lineinfile:
     path: /etc/hosts
     regexp: ':.*{{ hostvars[item].inventory_hostname }}'
@@ -13,7 +29,7 @@
   notify:
     - Reload pf
 
-- name: Add IPv4 host to /etc/hosts
+- name: Add jails to /etc/hosts (IPv4)
   lineinfile:
     path: /etc/hosts
     regexp: '\..*{{ hostvars[item].inventory_hostname }}'

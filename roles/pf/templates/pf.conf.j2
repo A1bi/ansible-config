@@ -1,4 +1,4 @@
-int_if = {{ ext_interface }}
+int_if = {{ ansible_default_ipv6.interface }}
 localnet = $int_if:network
 set skip on lo0
 set block-policy return
