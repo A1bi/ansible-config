@@ -1,0 +1,3 @@
+- name: Restart jail
+  command: ezjail-admin restart {{ jail_name }}
+  delegate_to: '{{ jail_host }}'

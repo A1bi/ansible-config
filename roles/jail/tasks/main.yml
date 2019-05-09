@@ -1,0 +1,73 @@
+- block:
+    - name: gather facts from jail host
+      setup:
+
+    - name: Set jail_network variable
+      set_fact:
+        jail_network: '{% for addr in jail_ip_addresses %}{{ ansible_default_ipv6.interface }}|{{ addr }}{% if not loop.last %},{% endif %}{% endfor %}{% if jail_lo_address is defined %},lo1|{{ jail_lo_address }}{% endif %}'
+
+    - name: Create jail
+      command: ezjail-admin create {{ jail_name }} "{{ jail_network }}"
+      args:
+        creates: /usr/local/etc/ezjail/{{ jail_name }}
+      notify:
+        - Restart jail
+
+    - name: Set IP addresses
+      lineinfile:
+        path: /usr/local/etc/ezjail/{{ jail_name }}
+        regexp: jail_{{ jail_name }}_ip
+        line: export jail_{{ jail_name }}_ip="{{ jail_network }}"
+      notify:
+        - Restart jail
+
+    - name: Copy rc.conf, resolv.conf
+      copy:
+        src: '{{ item }}'
+        dest: /usr/jails/{{ jail_name }}/etc/{{ item }}
+      with_list:
+        - rc.conf
+        - resolv.conf
+      notify:
+        - Restart jail
+
+    - name: Enable ssh root login
+      lineinfile:
+        path: /usr/jails/{{ jail_name }}/etc/ssh/sshd_config
+        regexp: PermitRootLogin
+        line: PermitRootLogin yes
+      notify:
+        - Restart jail
+
+    - name: Disable ssh login with passphrase
+      lineinfile:
+        path: /usr/jails/{{ jail_name }}/etc/ssh/sshd_config
+        regexp: ChallengeResponseAuthentication
+        line: ChallengeResponseAuthentication no
+      notify:
+        - Restart jail
+
+    - name: Create SSH directory
+      file:
+        name: /usr/jails/{{ jail_name }}/root/.ssh
+        state: directory
+
+    - name: Add SSH key
+      get_url:
+        url: https://a0s.de/keys.pub
+        dest: /usr/jails/{{ jail_name }}/root/.ssh/authorized_keys
+      notify:
+        - Restart jail
+
+    - name: Force start jail for pkg to run
+      meta: flush_handlers
+
+    - name: Install python3, nano
+      pkgng:
+        name:
+          - python3
+          - nano
+        state: present
+        jail: '{{ jail_name }}'
+
+  delegate_to: '{{ jail_host }}'
