@@ -9,3 +9,14 @@
 - hosts: ansible-sandbox.dyn.a0s.de
   roles:
     - nginx
+
+- hosts: jails
+  gather_facts: no
+  roles:
+    - jail
+
+- hosts: jails
+  roles:
+    - zsh
+  vars:
+    zsh_theme: bira

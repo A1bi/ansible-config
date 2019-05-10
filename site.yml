@@ -2,6 +2,18 @@
   roles:
     - pf
     - monit
+    - zsh
+
+- hosts: jails
+  gather_facts: no
+  roles:
+    - jail
+
+- hosts: jails
+  roles:
+    - zsh
+  vars:
+    zsh_theme: bira
 
 - hosts: nsd_servers
   roles:

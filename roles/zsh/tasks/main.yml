@@ -1,0 +1,31 @@
+- name: Install zsh, gtar and ca_root_nss
+  pkgng:
+    name:
+      - zsh
+      - gtar
+      - ca_root_nss
+    state: present
+
+- name: Set shell for user
+  user:
+    name: root
+    shell: /usr/local/bin/zsh
+
+- name: Copy oh-my-zsh config file
+  template:
+    src: zshrc.j2
+    dest: '{{ ansible_env.HOME }}/.zshrc'
+
+- name: Create oh-my-zsh directory
+  file:
+    path: '{{ ansible_env.HOME }}/.oh-my-zsh'
+    state: directory
+
+- name: Extract oh-my-zsh
+  unarchive:
+    src: https://a0s.de/oh-my-zsh.tar.gz
+    dest: '{{ ansible_env.HOME }}/.oh-my-zsh'
+    remote_src: true
+    mode: 0644
+    owner: '{{ ansible_env.USER }}'
+    creates: '{{ ansible_env.HOME }}/.oh-my-zsh/oh-my-zsh.sh'
