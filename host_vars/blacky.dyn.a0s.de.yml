@@ -2,3 +2,5 @@ nginx_monit: true
 nginx_proxy_ipv4: true
 
 monit_remote_http: true
+
+pf_nat_jails: false

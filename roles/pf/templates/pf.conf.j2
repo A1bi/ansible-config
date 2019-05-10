@@ -4,6 +4,10 @@ set skip on lo0
 set block-policy return
 scrub in all fragment reassemble
 
+{% if pf_nat_jails %}
+nat pass on $int_if inet from 10.0.1.0/24 -> $int_if
+{% endif %}
+
 {% include 'rules/nsd_rdr.j2' %}
 
 {% for rdr in pf_rdr %}
