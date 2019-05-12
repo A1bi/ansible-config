@@ -46,3 +46,9 @@
     dest: /etc/pf.conf
   notify:
     - Reload pf
+
+- name: Enable pf
+  service:
+    name: pf
+    state: started
+    enabled: true

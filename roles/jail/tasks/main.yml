@@ -6,6 +6,15 @@
       set_fact:
         jail_network: '{% for addr in jail_ip_addresses %}{{ ansible_default_ipv6.interface }}|{{ addr }}{% if not loop.last %},{% endif %}{% endfor %}{% if jail_lo_address is defined %},lo1|{{ jail_lo_address }}{% endif %}'
 
+    - name: Install ezjail
+      pkgng:
+        name: ezjail
+
+    - name: Enable ezjail
+      service:
+        name: ezjail
+        enabled: true
+
     - name: Create jail
       command: ezjail-admin create {{ jail_name }} "{{ jail_network }}"
       args:
@@ -21,13 +30,12 @@
       notify:
         - Restart jail
 
-    - name: Copy rc.conf, resolv.conf
-      copy:
-        src: '{{ item }}'
-        dest: /usr/jails/{{ jail_name }}/etc/{{ item }}
-      with_list:
-        - rc.conf
-        - resolv.conf
+    - name: Copy rc.conf
+      blockinfile:
+        block: '{{ lookup("file", "rc.conf") }}'
+        dest: /usr/jails/{{ jail_name }}/etc/rc.conf
+        insertbefore: BOF
+        create: true
       notify:
         - Restart jail
 

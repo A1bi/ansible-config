@@ -26,7 +26,3 @@
 - hosts: claude.a0s.de
   roles:
     - nginx
-
-- hosts: blacky.dyn.a0s.de
-  roles:
-    - monit

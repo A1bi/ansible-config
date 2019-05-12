@@ -1,0 +1,16 @@
+- name: Copy motd, periodic.conf, resolv.conf
+  copy:
+    src: '{{ item }}'
+    dest: /etc/{{ item }}
+    owner: root
+    group: wheel
+    mode: 0644
+  with_list:
+    - motd
+    - periodic.conf
+    - resolv.conf
+
+- name: Install nano
+  pkgng:
+    name: nano
+    state: present

@@ -1,14 +1,12 @@
 - hosts: jail_hosts
   roles:
+    - base
     - pf
     - monit
+    - zsh
 
 - hosts: blacky.dyn.a0s.de
   roles: []
-
-- hosts: ansible-sandbox.dyn.a0s.de
-  roles:
-    - nginx
 
 - hosts: jails
   gather_facts: no
@@ -17,6 +15,7 @@
 
 - hosts: jails
   roles:
+    - base
     - zsh
   vars:
     zsh_theme: bira
